@@ -1,10 +1,10 @@
-// read in data.json
+// set source
 const source = "samples.json";
 
 // Get a reference to the div that holds the selection dropdown
 var selectID = document.getElementById("selDataset");
 
-// loop to add data as dropdown options
+// loop to add sample ids as dropdown options
 d3.json(source).then(function(data) {
       let option;
     for (let i = 0; i < data.names.length; i++) {
@@ -29,20 +29,36 @@ function init() {
       var sortedData = subSelection.sort((a,b)=>b.sample_values-a.sample_values);
       var top10 = sortedData.slice(0,10);
       var reversed = top10.reverse();
-      console.log(reversed);
+      var labels = [];
+      reversed.map(row => row.otu_ids).forEach((i) => {
+        labels.push("OTU " + i)
+      });
     var trace1 = [{
       x: reversed.map(row => row.sample_values),
-      y: reversed.map(row => row.otu_ids),
+      y: labels,
       text: reversed.map(row => row.otu_labels),
       type: "bar",
       orientation: "h"
     }];
 
     var layout = {
-      title: "Dominant OTUs in individual (placehholder)",
-      xaxis: { title: "" },
-      yaxis: { title: "" }
+      title: "Dominant OTUs in Individual"
     };
+    // filter json data to only the metadata matching input ID
+    var metaData = data.metadata.filter(d => d.id === 940);
+    console.log(metaData[0]);
+    var metaTable = document.getElementById("sample-metadata");
+
+    // loop to add sample ids as dropdown options
+    for (let [key, value] of Object.entries(metaData[0])) {
+      var li = document.createElement('li');
+      li.appendChild(document.createTextNode(`${key}: ${value}`));
+      metaTable.appendChild(li);
+      console.log(`${key}: ${value}`);
+    }
+
+
+
 
     Plotly.newPlot("bar", trace1, layout);
   });
@@ -58,31 +74,47 @@ function getData() {
   var inputValue = dropdownMenu.property("value");
   // Fetch the JSON data and console log it
   d3.json(source).then(function(data) {
-
+    console.log(data)
   // filter json data to only the sample records matching input ID
-  var sampleData = data.filter(d => d.sample.id === inputValue);
+  var sampleData = data.samples.filter(d => d.id === inputValue);
     // sort and slice the filtered data to get top 10 OTUs
-    var sortedData = sampleData.sort((a,b)=>b.sample.sample_values-a.sample.sample_values);
-    var top10 = sortedData.slice(0,10);
-    var reversed = top10.reverse();
-    // var sample_values = data.samples.sample_values;
-    // var otu_ids = data.samples.otu_ids;
-    // var otu_labels = data.samples.otu_labels;
+    var subSelection = [];
+      for (var j = 0; j < sampleData[0].otu_ids.length; j++)
+          subSelection.push({'otu_ids': sampleData[0].otu_ids[j], 'otu_labels': sampleData[0].otu_labels[j], 'sample_values': sampleData[0].sample_values[j]});
+      // sort and slice the filtered data to get top 10 OTUs
+      console.log(subSelection);
+      var sortedData = subSelection.sort((a,b)=>b.sample_values-a.sample_values);
+      var top10 = sortedData.slice(0,10);
+      var reversed = top10.reverse();
 
-  // // filter json data to only the metadata matching input ID
-  // var metaData = data.filter(d => d.metadata.id === inputValue);
-  //   var ethnicity = data.metadata.ethnicity;
-  //   var gender = data.metadata.gender;
-  //   var age = data.metadata.age;
-  //   var location = data.metadata.location;
-  //   var bbtype = data.metadata.bbtype;
-  //   var wfreq = data.metadata.wfreq;
+  // filter json data to only the metadata matching input ID
+  var metaData = data.metadata.filter(d => d.id === inputValue);
+  // filter json data to only the metadata matching input ID
+    var ethnicity = data.metadata.ethnicity;
+    var gender = data.metadata.gender;
+    var age = data.metadata.age;
+    var location = data.metadata.location;
+    var bbtype = data.metadata.bbtype;
+    var wfreq = data.metadata.wfreq;
   updatePlotly(reversed);
   });
 };
 
 function updatePlotly(newdata) {
-  Plotly.restyle("bar", "values", [newdata]);
+  var newLabels = [];
+  console.log(newdata);
+  newdata.map(row => row.otu_ids).forEach((i) => {
+    newLabels.push("OTU " + i)
+  });
+  console.log(newLabels)
+  var update = {
+      x: newdata.map(row => row.sample_values),
+      y: newLabels,
+      text: newdata.map(row => row.otu_labels),
+      type: "bar",
+      orientation: "h"
+  }
+  Plotly.restyle("bar", update);
 };
 
 
@@ -92,26 +124,6 @@ console.log("Data Promise: ", dataPromise);
 
 init();
 
-// var trace1 = {
-//   x: data.map(row => row.pair),
-//   y: data.map(row => row.greekSearchResults),
-//   text: data.map(row => row.greekName),
-//   type: "hbar"
-// };
-//
-//
-// // Combining both traces
-// var data = [trace1;
-//
-// // Apply the group barmode to the layout
-// var layout = {
-//   title: "Dominant OTUs in individual (placehholder)",
-//   xaxis: { title: "" },
-//   yaxis: { title: "" }
-// };
-//
-// // Render the plot to the div tag with id "plot"
-// Plotly.newPlot("bar", data, layout);
 
 //
 // var ethnicity = data.metadata.ethnicity;
