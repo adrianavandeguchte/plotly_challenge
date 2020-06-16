@@ -49,7 +49,7 @@ function buildPlots() {
       title: title
     };
     // filter json data to only the metadata matching input ID
-    var metaData = data.metadata.filter(d => d.id === inputValue);
+    var metaData = data.metadata.filter(d => d.id === parseInt(inputValue));
     console.log(metaData[0]);
     var metaTable = document.getElementById("sample-metadata");
     metaTable.innerHTML = "";
@@ -58,7 +58,6 @@ function buildPlots() {
       var li = document.createElement('li');
       li.appendChild(document.createTextNode(`${key}: ${value}`));
       metaTable.appendChild(li);
-      console.log(`${key}: ${value}`);
     }
 
     // build of bubble plot
@@ -79,6 +78,35 @@ function buildPlots() {
     };
 
 
+    // build of gauge chart
+    var gaugeTrace = [
+  	  {
+  		domain: { x: [0, 1], y: [0, 1] },
+  		value: metaData[0].wfreq,
+  		title: { text: "" },
+  		type: "indicator",
+  		mode: "gauge+number",
+      gauge: {
+        bar: { color: "#337ab7" },
+        axis: { range: [0, 9] },
+        steps: [
+          { range: [0, 1], color: "#a1a1a1" },
+          { range: [1, 2], color: "#bcc1c6" },
+          { range: [2, 3], color: "#c6d3df" },
+          { range: [3, 4], color: "#c4ddf1" },
+          { range: [4, 5], color: "#b4d5f1" },
+          { range: [5, 6], color: "#a8d0f3" },
+          { range: [6, 7], color: "#8ec5f5" },
+          { range: [7, 8], color: "#70b3ed" },
+          { range: [8, 9], color: "#4599e1" },
+        ]
+  	}}];
+
+    var gaugeLayout = {
+      title: "Belly Button Washes per Week"
+    }
+
+    Plotly.newPlot('gauge', gaugeTrace, gaugeLayout);
     Plotly.newPlot("bar", barTrace, barLayout);
     Plotly.newPlot('bubble', bubbleTrace, bubbleLayout);
   });
